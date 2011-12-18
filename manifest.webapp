@@ -11,6 +11,7 @@
     "32": "/style/mandelbrotIcon32.png"
   },
   "installs_allowed_from": [
-    "https://appstore.mozillalabs.com"
+    "https://apps-preview.mozilla.org",
+    "https://apps.mozilla.org"
   ]
 }
