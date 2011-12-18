@@ -15,7 +15,7 @@
  *
  * The Initial Developer of the Original Code is
  * Robert Kaiser <kairo@kairo.at>.
- * Portions created by the Initial Developer are Copyright (C) 2008-210
+ * Portions created by the Initial Developer are Copyright (C) 2008-2011
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -214,6 +214,7 @@ function drawImage() {
 
   if (gCurrentImageData) {
     gLastImageData = gCurrentImageData;
+    document.getElementById("backButton").disabled = false;
   }
 
   gColorPalette = getColorPalette(document.getElementById("palette").value);
@@ -527,15 +528,21 @@ var imgEvHandler = {
           if (zoomend.y < zoomstart.y)
             [zoomend.y, zoomstart.y] = [zoomstart.y, zoomend.y];
 
-          // determine new "coordinates"
-          var CWidth = gCurrentImageData.C_max.r - gCurrentImageData.C_min.r;
-          var CHeight = gCurrentImageData.C_max.i - gCurrentImageData.C_min.i;
-          var newC_min = new complex(
-              gCurrentImageData.C_min.r + zoomstart.x / gCurrentImageData.iWidth * CWidth,
-              gCurrentImageData.C_min.i + zoomstart.y / gCurrentImageData.iHeight * CHeight);
-          var newC_max = new complex(
-              gCurrentImageData.C_min.r + zoomend.x / gCurrentImageData.iWidth * CWidth,
-              gCurrentImageData.C_min.i + zoomend.y / gCurrentImageData.iHeight * CHeight);
+          if (gCurrentImageData) {
+            // determine new "coordinates"
+            var CWidth = gCurrentImageData.C_max.r - gCurrentImageData.C_min.r;
+            var CHeight = gCurrentImageData.C_max.i - gCurrentImageData.C_min.i;
+            var newC_min = new complex(
+                gCurrentImageData.C_min.r + zoomstart.x / gCurrentImageData.iWidth * CWidth,
+                gCurrentImageData.C_min.i + zoomstart.y / gCurrentImageData.iHeight * CHeight);
+            var newC_max = new complex(
+                gCurrentImageData.C_min.r + zoomend.x / gCurrentImageData.iWidth * CWidth,
+                gCurrentImageData.C_min.i + zoomend.y / gCurrentImageData.iHeight * CHeight);
+          }
+          else {
+            var newC_min = new complex(-2, -1.5);
+            var newC_max = new complex(1, 1.5);
+          }
 
           adjustCoordsAndDraw(newC_min, newC_max);
         }
@@ -550,10 +557,16 @@ var imgEvHandler = {
                              coordObj.clientX - canvas.offsetLeft - zoomstart.x,
                              coordObj.clientY - canvas.offsetTop - zoomstart.y);
         }
-      break;
+        break;
     }
   }
 };
+
+function drawIfEmpty() {
+  if (!gCurrentImageData) {
+    drawImage();
+  }
+}
 
 function toggleSettings() {
   var fs = document.getElementById("settings");
@@ -571,6 +584,7 @@ function goBack() {
     // use gLastImageData.iWidth, gLastImageData.iHeight ???
     adjustCoordsAndDraw(gLastImageData.C_min, gLastImageData.C_max);
     gLastImageData = undefined;
+    document.getElementById("backButton").disabled = true;
   }
 }
 
