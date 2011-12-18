@@ -6,12 +6,14 @@
   <script src="js/mandelbrot.js"></script>
   <link rel="stylesheet" href="style/mandelbrot.css">
 </head>
-<body>
+<body onload="Startup();">
 <h1>KaiRo.at Mandelbrot Web</h1>
 
 <div id="overlayArea">
 <input type="button" id="drawButton" value="Draw Image"
        onclick="drawImage();">
+<input type="button" id="backButton" value="Back"
+       onclick="goBack();">
 <input type="button" id="settingsButton" value="Settings"
        onclick="toggleSettings();">
 <fieldset id="settings"><legend>Image data</legend>
@@ -37,6 +39,9 @@ Max: <input id="Ci_max" value="1.5" maxlength="6" size="6" type="text">
 <option value="bw">Black &amp; White</option>
 <option value="kairo" selected="selected">KaiRo default</option>
 <option value="rainbow-linear1">Rainbow-linear 1</option>
+<option value="rainbow-squared1">Rainbow 1 Squared</option>
+<option value="rainbow-linear2">Rainbow 2 Linear</option>
+<option value="rainbow-squared2">Rainbow 2 Squared</option>
 </select>
 </fieldset>
 </div>
