@@ -1,0 +1,16 @@
+#overlayArea {
+  position: absolute;
+}
+
+#settings {
+  display: none;
+}
+
+#mainArea {
+  text-align: center;
+  margin: 1em 0;
+}
+
+#mbrotImage {
+  background-color: lightblue;
+}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html manifest="manifest.appcache">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>KaiRo.at Mandelbrot Web</title>
+  <script src="js/mandelbrot.js"></script>
+  <link rel="stylesheet" href="style/mandelbrot.css">
+</head>
+<body>
+<h1>KaiRo.at Mandelbrot Web</h1>
+
+<div id="overlayArea">
+<input type="button" id="drawButton" value="Draw Image"
+       onclick="drawImage();">
+<input type="button" id="settingsButton" value="Settings"
+       onclick="toggleSettings();">
+<fieldset id="settings"><legend>Image data</legend>
+Image coordinates:
+<br>Real:
+Min: <input id="Cr_min" value="-2.0" maxlength="6" size="6" type="text">
+Max: <input id="Cr_max" value="1.0" maxlength="6" size="6" type="text">
+<br>Imag:
+Min: <input id="Ci_min" value="-1.5" maxlength="6" size="6" type="text">
+Max: <input id="Ci_max" value="1.5" maxlength="6" size="6" type="text">
+
+<br>Maximum of iterations:
+<select id="iterMax">
+<option value="50">50</option>
+<option value="100">100</option>
+<option value="500" selected="selected">500</option>
+<option value="1000">1000</option>
+<option value="5000">5000</option>
+</select>
+
+<br>Color palette:
+<select id="palette">
+<option value="bw">Black &amp; White</option>
+<option value="kairo" selected="selected">KaiRo default</option>
+<option value="rainbow-linear1">Rainbow-linear 1</option>
+</select>
+</fieldset>
+</div>
+
+<div id="mainArea">
+<canvas id="mbrotImage" width="300" height="300"></canvas>
+</div>
+
+<p>Time taken for calculation: <span id="calcTime">none yet</span></p>
+
+</body></html>

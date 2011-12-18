@@ -1,0 +1,12 @@
+CACHE MANIFEST
+
+# /
+index.html
+manifest.webapp
+js/mandelbrot.js
+style/mandelbrot.css
+style/mandelbrotIcon16.png
+style/mandelbrotIcon32.png
+
+NETWORK:
+
