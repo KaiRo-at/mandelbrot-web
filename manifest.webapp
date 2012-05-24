@@ -9,9 +9,5 @@
   "icons": {
     "16": "/style/mandelbrotIcon16.png",
     "32": "/style/mandelbrotIcon32.png"
-  },
-  "installs_allowed_from": [
-    "https://apps-preview.mozilla.org",
-    "https://marketplace.mozilla.org"
-  ]
+  }
 }
