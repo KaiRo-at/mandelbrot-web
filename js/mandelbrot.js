@@ -191,6 +191,56 @@ function setVal(aName, aValue) {
   }
 }
 
+function checkISValue(textbox, type) {
+  if (type == "coord") {
+    textbox.value = roundCoord(parseFloat(textbox.value));
+  }
+  else if (type == "dim") {
+    textbox.value = parseInt(textbox.value);
+  }
+}
+
+function recalcCoord(coord, target) {
+  var othercoord = (coord == "Ci") ? "Cr" : "Ci";
+  var owndim = (coord == "Ci") ? "height" : "width";
+  var otherdim = (coord == "Ci") ? "width" : "height";
+  var myscale;
+  if (target == "scale") {
+    myscale =
+      parseFloat(document.getElementById(coord + "_max").value) -
+      parseFloat(document.getElementById(coord + "_min").value);
+    document.getElementById(coord + "_scale").value = roundCoord(myscale);
+  }
+  else if (target == 'max') {
+    var mymax =
+      parseFloat(document.getElementById(coord + "_min").value) +
+      parseFloat(document.getElementById(coord + "_scale").value);
+    document.getElementById(coord + "_max").value = roundCoord(mymax);
+    myscale = document.getElementById(coord + "_scale").value;
+  }
+  if (document.getElementById("proportional").checked) {
+    var otherscale = myscale *
+      document.getElementById("image_" + otherdim).value /
+      document.getElementById("image_" + owndim).value;
+    document.getElementById(othercoord + "_scale").value = roundCoord(otherscale);
+    var othermax =
+      parseFloat(document.getElementById(othercoord + "_min").value) +
+      parseFloat(document.getElementById(othercoord + "_scale").value);
+    document.getElementById(othercoord + "_max").value = roundCoord(othermax);
+  }
+}
+
+function checkProportions() {
+  if (!document.getElementById("proportional").checked) {
+    recalcCoord("Cr", "scale");
+  }
+}
+
+function roundCoord(floatval) {
+  // We should round to 10 decimals here or so
+  return parseFloat(floatval.toFixed(10));
+}
+
 function adjustCoordsAndDraw(aC_min, aC_max) {
   var iWidth = getAdjustVal("image.width");
   var iHeight = getAdjustVal("image.height");
@@ -249,16 +299,8 @@ function drawImage() {
   var iterMax = getAdjustVal("iteration_max");
   var algorithm = getAdjustVal("use_algorithm");
 
-  var iWidth = canvas.width;
-  if ((iWidth < 10) || (iWidth > 5000)) {
-    iWidth = 300;
-    canvas.width = iWidth;
-  }
-  var iHeight = canvas.height;
-  if ((iHeight < 10) || (iHeight > 5000)) {
-    iHeight = 300;
-    canvas.height = iHeight;
-  }
+  var iWidth = getAdjustVal("image.width");
+  var iHeight = getAdjustVal("image.height");
 
   gCurrentImageData = {
     C_min: new complex(Cr_min, Ci_min),
@@ -267,6 +309,9 @@ function drawImage() {
     iHeight: iHeight,
     iterMax: iterMax
   };
+
+  canvas.width = iWidth;
+  canvas.height = iHeight;
 
   context.fillStyle = "rgba(255, 255, 255, 127)";
   context.fillRect(0, 0, canvas.width, canvas.height);

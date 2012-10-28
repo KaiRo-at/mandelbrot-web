@@ -27,13 +27,37 @@
 <fieldset id="settings"><legend>Image data</legend>
 Image coordinates:
 <br>Real:
-Min: <input id="Cr_min" value="-2.0" maxlength="6" size="6" type="text">
-Max: <input id="Cr_max" value="1.0" maxlength="6" size="6" type="text">
+<br>Min:
+<input id="Cr_min" value="-2.0" maxlength="10" size="10" type="text"
+       onchange="checkISValue(this, 'coord'); recalcCoord('Cr', 'scale');">
+Max:
+<input id="Cr_max" value="1.0" maxlength="10" size="10" type="text"
+       onchange="checkISValue(this, 'coord'); recalcCoord('Cr', 'scale');">
+Scale:
+<input id="Cr_scale" value="3.0" maxlength="10" size="10" type="text"
+       onchange="checkISValue(this, 'coord'); recalcCoord('Cr', 'max');">
 <br>Imag:
-Min: <input id="Ci_min" value="-1.5" maxlength="6" size="6" type="text">
-Max: <input id="Ci_max" value="1.5" maxlength="6" size="6" type="text">
+<br>Min:
+<input id="Ci_min" value="-1.5" maxlength="10" size="10" type="text"
+       onchange="checkISValue(this, 'coord'); recalcCoord('Ci', 'scale');">
+Max:
+<input id="Ci_max" value="1.5" maxlength="10" size="10" type="text"
+       onchange="checkISValue(this, 'coord'); recalcCoord('Ci', 'scale');">
+Scale:
+<input id="Ci_scale" value="3.0" maxlength="10" size="10" type="text"
+       onchange="checkISValue(this, 'coord'); recalcCoord('Ci', 'max');">
 
-<br>Maximum of iterations:
+<br><br>Image size:
+<br>Width:
+<input id="image_width" value="300" maxlength="4" size="4" type="number"
+       onchange="checkISValue(this, 'dim'); recalcCoord('Ci', 'scale');">
+Height:
+<input id="image_height" value="300" maxlength="4" size="4" type="number"
+       onchange="checkISValue(this, 'dim'); recalcCoord('Cr', 'scale');">
+<input type="checkbox" id="proportional" onchange="checkProportions();">
+<label for="proportional">proportional</label>
+
+<br><br>Maximum of iterations:
 <select id="iterMax">
 <option value="50">50</option>
 <option value="100">100</option>
