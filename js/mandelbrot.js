@@ -2,6 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Get the best-available indexedDB object.
+var iDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB;
+var mainDB;
+
 var gMainCanvas, gMainContext;
 var gColorPalette = [];
 var gStartTime = 0;
@@ -9,6 +13,8 @@ var gCurrentImageData;
 var gLastImageData;
 
 function Startup() {
+  initDB();
+
   gMainCanvas = document.getElementById("mbrotImage");
   gMainContext = gMainCanvas.getContext("2d");
 
@@ -26,6 +32,34 @@ function Startup() {
   gMainContext.drawImage(initTile, 0, 0);
 }
 
+function initDB() {
+  // Open DB.
+  var request = iDB.open("MainDB", 1);
+  request.onerror = function(event) {
+    // Errors can be handled here. Error codes explain in:
+    // https://developer.mozilla.org/en/IndexedDB/IDBDatabaseException#Constants
+    //document.getElementById("debug").textContent =
+    //  "error opening mainDB: " + event.target.errorCode;
+  };
+  request.onsuccess = function(event) {
+    //document.getElementById("debug").textContent = "mainDB opened.";
+    mainDB = request.result;
+  };
+  request.onupgradeneeded = function(event) {
+    mainDB = request.result;
+    //document.getElementById("debug").textContent = "mainDB upgraded.";
+    // Create a "prefs" objectStore.
+    var prefsStore = mainDB.createObjectStore("prefs");
+    // Create a "bookmarks" objectStore.
+    var bmStore = mainDB.createObjectStore("bookmarks");
+    mainDB.onversionchange = function(event) {
+      mainDB.close();
+      mainDB = undefined;
+      initDB();
+    };
+  };
+}
+
 function getAdjustVal(aName) {
   var value;
   switch (aName) {
@@ -38,6 +72,7 @@ function getAdjustVal(aName) {
       catch (e) { }
       if ((value < 10) || (value > 5000)) {
         value = 300;
+        gPrefs.set(prefname, value);
         //document.getElementById(aName.replace(".", "_")).value = value;
       }
       return value;
@@ -53,6 +88,8 @@ function getAdjustVal(aName) {
           (Cr_max < -3) || (Cr_max > 2) || (Cr_min >= Cr_max)) {
         Cr_min = -2.0; Cr_max = 1.0;
       }
+      gPrefs.set("Cr_min", Cr_min);
+      gPrefs.set("Cr_max", Cr_max);
       document.getElementById("Cr_min").value = Cr_min;
       document.getElementById("Cr_max").value = Cr_max;
       return {Cr_min: Cr_min, Cr_max: Cr_max};
@@ -68,6 +105,8 @@ function getAdjustVal(aName) {
           (Ci_max < -2.5) || (Ci_max > 2.5) || (Ci_min >= Ci_max)) {
         Ci_min = -1.5; Ci_max = 1.5;
       }
+      gPrefs.set("Ci_min", Ci_min);
+      gPrefs.set("Ci_max", Ci_max);
       document.getElementById("Ci_min").value = Ci_min;
       document.getElementById("Ci_max").value = Ci_max;
       return {Ci_min: Ci_min, Ci_max: Ci_max};
@@ -108,6 +147,7 @@ function getAdjustVal(aName) {
         value = document.getElementById("proportional").value;
       }
       catch(e) {
+        gPrefs.set(prefname, value);
         document.getElementById("proportional").value = value;
       }
       return value;
@@ -120,13 +160,18 @@ function setVal(aName, aValue) {
   switch (aName) {
     case "image.width":
     case "image.height":
+      gPrefs.set(aName, value);
       document.getElementById(aName.replace(".", "_")).value = value;
       break;
     case "last_image.Cr_*":
+      gPrefs.set("Cr_min", Cr_min);
+      gPrefs.set("Cr_max", Cr_max);
       document.getElementById("Cr_min").value = aValue.Cr_min;
       document.getElementById("Cr_max").value = aValue.Cr_max;
       break;
     case "last_image.Ci_*":
+      gPrefs.set("Ci_min", Ci_min);
+      gPrefs.set("Ci_max", Ci_max);
       document.getElementById("Ci_min").value = aValue.Ci_min;
       document.getElementById("Ci_max").value = aValue.Ci_max;
       break;
@@ -140,6 +185,7 @@ function setVal(aName, aValue) {
       setPalette(valueaValue);
       break;
    case "syncProportions":
+      gPrefs.set(aName, value);
       document.getElementById("proportional").value = aValue;
       break;
   }
@@ -562,14 +608,170 @@ function goBack() {
 }
 
 function setIter(aIter) {
+  gPrefs.set("iteration_max", aIter);
   document.getElementById("iterMax").value = aIter;
 }
 
 function setPalette(aPaletteID) {
+  gPrefs.set("color_palette", aPaletteID);
   document.getElementById("palette").value = aPaletteID;
   gColorPalette = getColorPalette(aPaletteID);
 }
 
 function setAlgorithm(algoID) {
+  gPrefs.set("use_algorithm", algoID);
   //document.getElementById("algorithm").value = algoID;
 }
+
+var gPrefs = {
+  objStore: "prefs",
+
+  get: function(aKey, aCallback) {
+    if (!mainDB)
+      return;
+    var transaction = mainDB.transaction([this.objStore]);
+    var request = transaction.objectStore(this.objStore).get(aKey);
+    request.onsuccess = function(event) {
+      aCallback(request.result, event);
+    };
+    request.onerror = function(event) {
+      // Errors can be handled here.
+      aCallback(undefined, event);
+    };
+  },
+
+  set: function(aKey, aValue, aCallback) {
+    if (!mainDB)
+      return;
+    var success = false;
+    var transaction = mainDB.transaction([this.objStore], "readwrite");
+    var objStore = transaction.objectStore(this.objStore);
+    var request = objStore.put(aValue, aKey);
+    request.onsuccess = function(event) {
+      success = true;
+      if (aCallback)
+        aCallback(success, event);
+    };
+    request.onerror = function(event) {
+      // Errors can be handled here.
+      if (aCallback)
+        aCallback(success, event);
+    };
+  },
+
+  unset: function(aKey, aCallback) {
+    if (!mainDB)
+      return;
+    var success = false;
+    var transaction = mainDB.transaction([this.objStore], "readwrite");
+    var request = transaction.objectStore(this.objStore).delete(aKey);
+    request.onsuccess = function(event) {
+      success = true;
+      if (aCallback)
+        aCallback(success, event);
+    };
+    request.onerror = function(event) {
+      // Errors can be handled here.
+      if (aCallback)
+        aCallback(success, event);
+    }
+  }
+};
+
+var gBMStore = {
+  objStore: "bookmarks",
+
+  getList: function(aCallback) {
+    if (!mainDB)
+      return;
+    var transaction = mainDB.transaction([this.objStore]);
+    var objStore = transaction.objectStore(this.objStore);
+    if (objStore.getAll) { // currently Mozilla-specific
+      objStore.getAll().onsuccess = function(event) {
+        aCallback(event.target.result);
+      };
+    }
+    else { // Use cursor (standard method).
+      var BMs = {};
+      objStore.openCursor().onsuccess = function(event) {
+        var cursor = event.target.result;
+        if (cursor) {
+          BMs[cursor.key] = cursor.value;
+          cursor.continue();
+        }
+        else {
+          aCallback(BMs);
+        }
+      };
+    }
+  },
+
+  get: function(aKey, aCallback) {
+    if (!mainDB)
+      return;
+    var transaction = mainDB.transaction([this.objStore]);
+    var request = transaction.objectStore(this.objStore).get(aKey);
+    request.onsuccess = function(event) {
+      aCallback(request.result, event);
+    };
+    request.onerror = function(event) {
+      // Errors can be handled here.
+      aCallback(undefined, event);
+    };
+  },
+
+  set: function(aKey, aValue, aCallback) {
+    if (!mainDB)
+      return;
+    var success = false;
+    var transaction = mainDB.transaction([this.objStore], "readwrite");
+    var objStore = transaction.objectStore(this.objStore);
+    var request = objStore.put(aValue, aKey);
+    request.onsuccess = function(event) {
+      success = true;
+      if (aCallback)
+        aCallback(success, event);
+    };
+    request.onerror = function(event) {
+      // Errors can be handled here.
+      if (aCallback)
+        aCallback(success, event);
+    };
+  },
+
+  unset: function(aKey, aCallback) {
+    if (!mainDB)
+      return;
+    var success = false;
+    var transaction = mainDB.transaction([this.objStore], "readwrite");
+    var request = transaction.objectStore(this.objStore).delete(aKey);
+    request.onsuccess = function(event) {
+      success = true;
+      if (aCallback)
+        aCallback(success, event);
+    };
+    request.onerror = function(event) {
+      // Errors can be handled here.
+      if (aCallback)
+        aCallback(success, event);
+    }
+  },
+
+  clear: function(aCallback) {
+    if (!mainDB)
+      return;
+    var success = false;
+    var transaction = mainDB.transaction([this.objStore], "readwrite");
+    var request = transaction.objectStore(this.objStore).clear();
+    request.onsuccess = function(event) {
+      success = true;
+      if (aCallback)
+        aCallback(success, event);
+    };
+    request.onerror = function(event) {
+      // Errors can be handled here.
+      if (aCallback)
+        aCallback(success, event);
+    }
+  }
+};
