@@ -6,6 +6,9 @@
 <html manifest="manifest.appcache">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <!-- try to counts default scaling on mobile, see 
+       https://developer.mozilla.org/en/Mobile/Viewport_meta_tag -->
+  <meta name="viewport" content="width=device-width, height=device-height, initial-scale=.6667, maximum-scale=.6667">
   <title>KaiRo.at Mandelbrot Web</title>
   <script src="js/mandelbrot.js"></script>
   <link rel="stylesheet" href="style/mandelbrot.css">

@@ -2,21 +2,28 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+var gMainCanvas, gMainContext;
 var gColorPalette = [];
 var gStartTime = 0;
 var gCurrentImageData;
 var gLastImageData;
 
 function Startup() {
-  var img = document.getElementById("mbrotImage");
-  img.addEventListener("mouseup", imgEvHandler, false);
-  img.addEventListener("mousedown", imgEvHandler, false);
-  img.addEventListener("mousemove", imgEvHandler, false);
-  img.addEventListener("touchstart", imgEvHandler, false);
-  img.addEventListener("touchend", imgEvHandler, false);
-  img.addEventListener("touchcancel", imgEvHandler, false);
-  img.addEventListener("touchleave", imgEvHandler, false);
-  img.addEventListener("touchmove", imgEvHandler, false);
+  gMainCanvas = document.getElementById("mbrotImage");
+  gMainContext = gMainCanvas.getContext("2d");
+
+  gMainCanvas.addEventListener("mouseup", imgEvHandler, false);
+  gMainCanvas.addEventListener("mousedown", imgEvHandler, false);
+  gMainCanvas.addEventListener("mousemove", imgEvHandler, false);
+  gMainCanvas.addEventListener("touchstart", imgEvHandler, false);
+  gMainCanvas.addEventListener("touchend", imgEvHandler, false);
+  gMainCanvas.addEventListener("touchcancel", imgEvHandler, false);
+  gMainCanvas.addEventListener("touchleave", imgEvHandler, false);
+  gMainCanvas.addEventListener("touchmove", imgEvHandler, false);
+
+  var initTile = new Image();
+  initTile.src = "style/initial-overview.png";
+  gMainContext.drawImage(initTile, 0, 0);
 }
 
 function getAdjustVal(aName) {
@@ -173,8 +180,8 @@ function adjustCoordsAndDraw(aC_min, aC_max) {
 }
 
 function drawImage() {
-  var canvas = document.getElementById("mbrotImage");
-  var context = canvas.getContext("2d");
+  var canvas = gMainCanvas;
+  var context = gMainContext;
 
   document.getElementById("calcTime").textContent = "--";
 
