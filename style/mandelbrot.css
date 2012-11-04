@@ -4,6 +4,8 @@
 
 body {
   font-family: sans-serif;
+  background-color: #222222;
+  color: #FFFFFF;
 }
 
 h1 {
@@ -26,6 +28,15 @@ h1 {
 #settings {
   display: none;
   background-color: rgba(255, 255, 255, .8);
+  color: #000000;
+  border-radius: 3px;
+  border: 1px solid #FFFFFF;
+}
+
+#settings > legend {
+  background-color: #FFFFFF;
+  color: #000000;
+  border-radius: 3px;
 }
 
 #mainArea {
@@ -34,7 +45,7 @@ h1 {
 }
 
 #mbrotImage {
-  background-color: lightblue;
+  background-color: #444444;
 }
 
 @media screen and (max-width: 500px) {

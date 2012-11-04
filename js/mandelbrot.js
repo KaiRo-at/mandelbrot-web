@@ -29,7 +29,7 @@ function Startup() {
 
   var initTile = new Image();
   initTile.src = "style/initial-overview.png";
-  gMainContext.drawImage(initTile, 0, 0);
+  initTile.onload = function() { gMainContext.drawImage(initTile, 0, 0); };
 }
 
 function initDB() {
@@ -160,18 +160,18 @@ function setVal(aName, aValue) {
   switch (aName) {
     case "image.width":
     case "image.height":
-      gPrefs.set(aName, value);
-      document.getElementById(aName.replace(".", "_")).value = value;
+      gPrefs.set(aName, aValue);
+      document.getElementById(aName.replace(".", "_")).value = aValue;
       break;
     case "last_image.Cr_*":
-      gPrefs.set("Cr_min", Cr_min);
-      gPrefs.set("Cr_max", Cr_max);
+      gPrefs.set("Cr_min", aValue.Cr_min);
+      gPrefs.set("Cr_max", aValue.Cr_max);
       document.getElementById("Cr_min").value = aValue.Cr_min;
       document.getElementById("Cr_max").value = aValue.Cr_max;
       break;
     case "last_image.Ci_*":
-      gPrefs.set("Ci_min", Ci_min);
-      gPrefs.set("Ci_max", Ci_max);
+      gPrefs.set("Ci_min", aValue.Ci_min);
+      gPrefs.set("Ci_max", aValue.Ci_max);
       document.getElementById("Ci_min").value = aValue.Ci_min;
       document.getElementById("Ci_max").value = aValue.Ci_max;
       break;
@@ -182,10 +182,10 @@ function setVal(aName, aValue) {
       setAlgorithm(aValue);
       break;
    case "color_palette":
-      setPalette(valueaValue);
+      setPalette(aValue);
       break;
    case "syncProportions":
-      gPrefs.set(aName, value);
+      gPrefs.set(aName, aValue);
       document.getElementById("proportional").value = aValue;
       break;
   }
