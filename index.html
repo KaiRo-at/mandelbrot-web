@@ -6,7 +6,7 @@
 <html manifest="manifest.appcache">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <!-- try to counts default scaling on mobile, see 
+  <!-- try to counts default scaling on mobile, see
        https://developer.mozilla.org/en/Mobile/Viewport_meta_tag -->
   <meta name="viewport" content="width=device-width, height=device-height, initial-scale=.6667, maximum-scale=.6667">
   <title>KaiRo.at Mandelbrot Web</title>
@@ -27,38 +27,38 @@
 <fieldset id="settings"><legend>Image data</legend>
 Image coordinates:
 <br>Real:
-<br>Min:
+<br><label for="Cr_min">Min:</label>
 <input id="Cr_min" value="-2.0" maxlength="10" size="10" type="text"
        onchange="checkISValue(this, 'coord'); recalcCoord('Cr', 'scale');">
-Max:
+<label for="Cr_max">Max:</label>
 <input id="Cr_max" value="1.0" maxlength="10" size="10" type="text"
        onchange="checkISValue(this, 'coord'); recalcCoord('Cr', 'scale');">
-Scale:
+<label for="Cr_scale">Scale:</label>
 <input id="Cr_scale" value="3.0" maxlength="10" size="10" type="text"
        onchange="checkISValue(this, 'coord'); recalcCoord('Cr', 'max');">
 <br>Imag:
-<br>Min:
+<br><label for="Ci_min">Min:</label>
 <input id="Ci_min" value="-1.5" maxlength="10" size="10" type="text"
        onchange="checkISValue(this, 'coord'); recalcCoord('Ci', 'scale');">
-Max:
+<label for="Ci_max">Max:</label>
 <input id="Ci_max" value="1.5" maxlength="10" size="10" type="text"
        onchange="checkISValue(this, 'coord'); recalcCoord('Ci', 'scale');">
-Scale:
+<label for="Ci_scale">Scale:</label>
 <input id="Ci_scale" value="3.0" maxlength="10" size="10" type="text"
        onchange="checkISValue(this, 'coord'); recalcCoord('Ci', 'max');">
 
 <br><br>Image size:
-<br>Width:
+<br><label for="image_width">Width:</label>
 <input id="image_width" value="300" maxlength="4" size="4" type="number"
        onchange="checkISValue(this, 'dim'); recalcCoord('Ci', 'scale');">
-Height:
+<label for="image_height">Height:</label>
 <input id="image_height" value="300" maxlength="4" size="4" type="number"
        onchange="checkISValue(this, 'dim'); recalcCoord('Cr', 'scale');">
 <input type="checkbox" id="proportional" checked="true"
        onchange="checkProportions();">
 <label for="proportional">proportional</label>
 
-<br><br>Maximum of iterations:
+<br><br><label for="iterMax">Maximum of iterations:</label>
 <select id="iterMax">
 <option value="50">50</option>
 <option value="100">100</option>
@@ -67,7 +67,7 @@ Height:
 <option value="5000">5000</option>
 </select>
 
-<br>Color palette:
+<br><label for="palette">Color palette:</label>
 <select id="palette">
 <option value="bw">Black &amp; White</option>
 <option value="kairo" selected="selected">KaiRo default</option>
