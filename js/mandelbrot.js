@@ -72,8 +72,8 @@ function getAdjustVal(aName) {
       catch (e) { }
       if ((value < 10) || (value > 5000)) {
         value = 300;
-        gPrefs.set(prefname, value);
-        //document.getElementById(aName.replace(".", "_")).value = value;
+        gPrefs.set(aName, value);
+        document.getElementById(aName.replace(".", "_")).value = value;
       }
       return value;
     case "last_image.Cr_*":
