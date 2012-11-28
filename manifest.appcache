@@ -1,12 +1,15 @@
 CACHE MANIFEST
 
-# 2012-11-09
+# 2012-11-28
 manifest.webapp
 js/mandelbrot.js
 style/initial-overview.png
 style/mandelbrot.css
 style/mandelbrotIcon16.png
 style/mandelbrotIcon32.png
+style/mandelbrotIcon48.png
+style/mandelbrotIcon64.png
+style/mandelbrotIcon128.png
 style/plain-overview.png
 
 NETWORK:
