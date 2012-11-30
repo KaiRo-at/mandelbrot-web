@@ -8,8 +8,9 @@ This app is listed in the Mozilla Marketplace at
 https://marketplace.mozilla.org/app/kairoat-mandelbrot-web/
 and is running on http://mandelbrot.kairo.at/
 
-The main repo is http://git-public.kairo.at/?p=mandelbrot.git;a=summary but
-it's listed on GitHub at https://github.com/KaiRo-at/mandelbrot for convenience
-for potential contributors. See the TODO for tasks that you can help with.
+The main repo is http://git-public.kairo.at/?p=mandelbrot-web.git;a=summary but
+it's listed on GitHub at https://github.com/KaiRo-at/mandelbrot-web for
+convenience for potential contributors. See the TODO for tasks that you can
+help with.
 
 Please don't use GitHub for issue tracking but http://bugzilla.kairo.at/
