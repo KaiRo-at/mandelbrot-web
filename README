@@ -1,0 +1,15 @@
+Navigate the Mandelbrot set - rewritten web version of the app written for
+Robert Kaiser's high school final thesis -
+http://science.kairo.at/physics/fba_mandelbrot/toc.html - and web variant of
+the add-on presented at
+https://addons.mozilla.org/en-US/firefox/addon/kairoat-mandelbrot/
+
+This app is listed in the Mozilla Marketplace at
+https://marketplace.mozilla.org/app/kairoat-mandelbrot-web/
+and is running on http://mandelbrot.kairo.at/
+
+The main repo is http://git-public.kairo.at/?p=mandelbrot.git;a=summary but
+it's listed on GitHub at https://github.com/KaiRo-at/mandelbrot for convenience
+for potential contributors. See the TODO for tasks that you can help with.
+
+Please don't use GitHub for issue tracking but http://bugzilla.kairo.at/
