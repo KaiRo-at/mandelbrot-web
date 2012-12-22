@@ -2,6 +2,7 @@
   "name": "KaiRo.at Mandelbrot Web",
   "description": "Mandelbrot web viewer",
   "launch_path": "/index.html",
+  "appcache_path": "/manifest.appcache",
   "developer": {
     "name": "Robert Kaiser",
     "url": "http://www.kairo.at/"
