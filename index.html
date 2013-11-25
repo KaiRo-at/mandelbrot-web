@@ -24,6 +24,11 @@
        onclick="goBack();" disabled="true">
 <input type="button" id="settingsButton" value="Settings"
        onclick="toggleSettings();">
+<label for="bookmarks">Bookmarks:</label>
+<select id="bookmarks" onclick="callBookmark(event.target);">
+<option id="bookmarkOverview" value="-1">Overview</option>
+</select>
+
 <fieldset id="settings"><legend>Image data</legend>
 Image coordinates:
 <br>Real:
@@ -59,16 +64,17 @@ Image coordinates:
 <label for="proportional">proportional</label>
 
 <br><br><label for="iterMax">Maximum of iterations:</label>
-<select id="iterMax">
+<select id="iterMax" onchange="setIter();">
 <option value="50">50</option>
 <option value="100">100</option>
 <option value="500" selected="selected">500</option>
 <option value="1000">1000</option>
 <option value="5000">5000</option>
 </select>
+<input type="hidden" id="algorithm" value="numeric">
 
 <br><label for="palette">Color palette:</label>
-<select id="palette">
+<select id="palette" onchange="setPalette();">
 <option value="bw">Black &amp; White</option>
 <option value="kairo" selected="selected">KaiRo default</option>
 <option value="rainbow-linear1">Rainbow-linear 1</option>
@@ -84,6 +90,8 @@ Image coordinates:
         onclick="drawIfEmpty();"></canvas>
 </div>
 
-<p>Time taken for calculation: <span id="calcTime">none yet</span></p>
+<p id="action">
+Time taken for calculation: <span id="calcTime">none yet</span>
+</p>
 
 </body></html>

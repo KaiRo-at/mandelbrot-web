@@ -6,6 +6,8 @@
 window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB;
 var mainDB;
 
+var gDebug = false;
+var gAction, gActionLabel;
 var gMainCanvas, gMainContext;
 var gColorPalette = [];
 var gStartTime = 0;
@@ -13,6 +15,9 @@ var gCurrentImageData;
 var gLastImageData;
 
 function Startup() {
+  gAction = document.getElementById("action");
+  gActionLabel = document.getElementById("actionlabel");
+  gAction.addEventListener("dbinit-done", initPrefs, false);
   initDB();
 
   gMainCanvas = document.getElementById("mbrotImage");
@@ -34,30 +39,68 @@ function Startup() {
 
 function initDB() {
   // Open DB.
-  var request = window.indexedDB.open("MainDB", 1);
+  var request = window.indexedDB.open("MainDB-mandelbrot", 1);
   request.onerror = function(event) {
     // Errors can be handled here. Error codes explain in:
     // https://developer.mozilla.org/en/IndexedDB/IDBDatabaseException#Constants
-    //document.getElementById("debug").textContent =
-    //  "error opening mainDB: " + event.target.errorCode;
+    if (gDebug)
+      console.log("error opening mainDB: " + event.target.errorCode);
   };
   request.onsuccess = function(event) {
     //document.getElementById("debug").textContent = "mainDB opened.";
     mainDB = request.result;
+    var throwEv = new CustomEvent("dbinit-done");
+    gAction.dispatchEvent(throwEv);
   };
   request.onupgradeneeded = function(event) {
     mainDB = request.result;
-    //document.getElementById("debug").textContent = "mainDB upgraded.";
-    // Create a "prefs" objectStore.
-    var prefsStore = mainDB.createObjectStore("prefs");
-    // Create a "bookmarks" objectStore.
-    var bmStore = mainDB.createObjectStore("bookmarks");
+    var ver = mainDB.version || 0; // version is empty string for a new DB
+    if (gDebug)
+      console.log("mainDB has version " + ver + ", upgrade needed.");
+    if (!mainDB.objectStoreNames.contains("prefs")) {
+      // Create a "prefs" objectStore.
+      var prefsStore = mainDB.createObjectStore("prefs");
+    }
+    if (!mainDB.objectStoreNames.contains("bookmarks")) {
+      // Create a "bookmarks" objectStore.
+      var prefsStore = mainDB.createObjectStore("bookmarks");
+    }
     mainDB.onversionchange = function(event) {
       mainDB.close();
       mainDB = undefined;
       initDB();
     };
   };
+}
+
+function initPrefs() {
+  if (gDebug)
+    console.log("initializing prefs...");
+  gSyncPrefs.init(function () {
+    // Update the various settings fields to values from prefs.
+    if (gSyncPrefs.get("image.width"))
+      document.getElementById("image_width").value = gSyncPrefs.get("image.width");
+    if (gSyncPrefs.get("image.height"))
+      document.getElementById("image_height").value = gSyncPrefs.get("image.height");
+    if (gSyncPrefs.get("Cr_min"))
+      document.getElementById("Cr_min").value = gSyncPrefs.get("Cr_min");
+    if (gSyncPrefs.get("Cr_max"))
+      document.getElementById("Cr_max").value = gSyncPrefs.get("Cr_max");
+    if (gSyncPrefs.get("Ci_min"))
+      document.getElementById("Ci_min").value = gSyncPrefs.get("Ci_min");
+    if (gSyncPrefs.get("Ci_max"))
+      document.getElementById("Ci_max").value = gSyncPrefs.get("Ci_max");
+    if (gSyncPrefs.get("iteration_max"))
+      document.getElementById("iterMax").value = gSyncPrefs.get("iteration_max");
+    if (gSyncPrefs.get("color_palette"))
+      document.getElementById("palette").value = gSyncPrefs.get("color_palette");
+    if (gSyncPrefs.get("syncProportions") === true || gSyncPrefs.get("syncProportions") === false)
+      document.getElementById("proportional").checked = gSyncPrefs.get("syncProportions");
+    if (gSyncPrefs.get("use_algorithm"))
+     document.getElementById("algorithm").value = gSyncPrefs.get("use_algorithm");
+    if (gDebug)
+      console.log("prefs loaded.");
+  });
 }
 
 function getAdjustVal(aName) {
@@ -70,9 +113,9 @@ function getAdjustVal(aName) {
         value = document.getElementById(aName.replace(".", "_")).value;
       }
       catch (e) { }
-      if ((value < 10) || (value > 5000)) {
+      if (!value || (value < 10) || (value > 5000)) {
         value = 300;
-        gPrefs.set(aName, value);
+        gSyncPrefs.set(aName, value);
         document.getElementById(aName.replace(".", "_")).value = value;
       }
       return value;
@@ -88,10 +131,11 @@ function getAdjustVal(aName) {
           (Cr_max < -3) || (Cr_max > 2) || (Cr_min >= Cr_max)) {
         Cr_min = -2.0; Cr_max = 1.0;
       }
-      gPrefs.set("Cr_min", Cr_min);
-      gPrefs.set("Cr_max", Cr_max);
+      gSyncPrefs.set("Cr_min", Cr_min);
+      gSyncPrefs.set("Cr_max", Cr_max);
       document.getElementById("Cr_min").value = Cr_min;
       document.getElementById("Cr_max").value = Cr_max;
+      document.getElementById("Cr_scale").value = Cr_max - Cr_min;
       return {Cr_min: Cr_min, Cr_max: Cr_max};
     case "last_image.Ci_*":
       var Ci_min = -1.5;
@@ -105,10 +149,11 @@ function getAdjustVal(aName) {
           (Ci_max < -2.5) || (Ci_max > 2.5) || (Ci_min >= Ci_max)) {
         Ci_min = -1.5; Ci_max = 1.5;
       }
-      gPrefs.set("Ci_min", Ci_min);
-      gPrefs.set("Ci_max", Ci_max);
+      gSyncPrefs.set("Ci_min", Ci_min);
+      gSyncPrefs.set("Ci_max", Ci_max);
       document.getElementById("Ci_min").value = Ci_min;
       document.getElementById("Ci_max").value = Ci_max;
+      document.getElementById("Ci_scale").value = Ci_max - Ci_min;
       return {Ci_min: Ci_min, Ci_max: Ci_max};
     case "iteration_max":
       value = 500;
@@ -147,7 +192,7 @@ function getAdjustVal(aName) {
         value = document.getElementById("proportional").value;
       }
       catch(e) {
-        gPrefs.set(prefname, value);
+        gSyncPrefs.set(prefname, value);
         document.getElementById("proportional").value = value;
       }
       return value;
@@ -160,18 +205,18 @@ function setVal(aName, aValue) {
   switch (aName) {
     case "image.width":
     case "image.height":
-      gPrefs.set(aName, aValue);
+      gSyncPrefs.set(aName, aValue);
       document.getElementById(aName.replace(".", "_")).value = aValue;
       break;
     case "last_image.Cr_*":
-      gPrefs.set("Cr_min", aValue.Cr_min);
-      gPrefs.set("Cr_max", aValue.Cr_max);
+      gSyncPrefs.set("Cr_min", aValue.Cr_min);
+      gSyncPrefs.set("Cr_max", aValue.Cr_max);
       document.getElementById("Cr_min").value = aValue.Cr_min;
       document.getElementById("Cr_max").value = aValue.Cr_max;
       break;
     case "last_image.Ci_*":
-      gPrefs.set("Ci_min", aValue.Ci_min);
-      gPrefs.set("Ci_max", aValue.Ci_max);
+      gSyncPrefs.set("Ci_min", aValue.Ci_min);
+      gSyncPrefs.set("Ci_max", aValue.Ci_max);
       document.getElementById("Ci_min").value = aValue.Ci_min;
       document.getElementById("Ci_max").value = aValue.Ci_max;
       break;
@@ -185,7 +230,7 @@ function setVal(aName, aValue) {
       setPalette(aValue);
       break;
    case "syncProportions":
-      gPrefs.set(aName, aValue);
+      gSyncPrefs.set(aName, aValue);
       document.getElementById("proportional").value = aValue;
       break;
   }
@@ -197,6 +242,10 @@ function checkISValue(textbox, type) {
   }
   else if (type == "dim") {
     textbox.value = parseInt(textbox.value);
+    if (textbox.id == "image_width")
+      gSyncPrefs.set("image.width", textbox.value);
+    if (textbox.id == "image_height")
+      gSyncPrefs.set("image.height", textbox.value);
   }
 }
 
@@ -231,9 +280,11 @@ function recalcCoord(coord, target) {
 }
 
 function checkProportions() {
-  if (!document.getElementById("proportional").checked) {
+  var prop = document.getElementById("proportional").checked;
+  if (!prop) {
     recalcCoord("Cr", "scale");
   }
+  gSyncPrefs.set("syncProportions", prop);
 }
 
 function roundCoord(floatval) {
@@ -653,39 +704,98 @@ function goBack() {
 }
 
 function setIter(aIter) {
-  gPrefs.set("iteration_max", aIter);
-  document.getElementById("iterMax").value = aIter;
+  if (aIter)
+    document.getElementById("iterMax").value = aIter;
+  else
+    aIter = document.getElementById("iterMax").value;
+  gSyncPrefs.set("iteration_max", aIter);
 }
 
 function setPalette(aPaletteID) {
-  gPrefs.set("color_palette", aPaletteID);
-  document.getElementById("palette").value = aPaletteID;
+  if (aPaletteID)
+    document.getElementById("palette").value = aPaletteID;
+  else
+    aPaletteID = document.getElementById("palette").value;
+  gSyncPrefs.set("color_palette", aPaletteID);
   gColorPalette = getColorPalette(aPaletteID);
 }
 
-function setAlgorithm(algoID) {
-  gPrefs.set("use_algorithm", algoID);
-  //document.getElementById("algorithm").value = algoID;
+function setAlgorithm(aAlgoID) {
+  if (aAlgoID)
+    document.getElementById("algorithm").value = aAlgoID;
+  else
+    aAlgoID = document.getElementById("algorithm").value;
+  gSyncPrefs.set("use_algorithm", aAlgoID);
 }
 
-var gPrefs = {
-  objStore: "prefs",
+function callBookmark(evtarget) {
+  if (evtarget.id == "bookmarkSave" || evtarget.id == "bookmarkSeparator")
+    return;
+  if (evtarget.id == "bookmarkOverview") {
+    adjustCoordsAndDraw(new complex(0,0), new complex(0,0));
+    return;
+  }
 
-  get: function(aKey, aCallback) {
+  if (evtarget.getAttribute('bmRowID')) {
+    var iterMax = 0;
+    var C_min = null;
+    var C_max = null;
+
+    // Get coordinates for this row ID.
+    /*
+    while (statement.executeStep()) {
+      iterMax = ;
+      C_min = new complex(, );
+      C_max = new complex(, );
+    }
+
+    if (iterMax && C_min && C_max) {
+      setIter(iterMax)
+      adjustCoordsAndDraw(C_min, C_max);
+    }
+    */
+  }
+}
+
+var gSyncPrefs = {
+  objStore: "prefs",
+  shadow: {},
+
+  init: function(aCallback) {
+    // Fill the shadow from the DB.
     if (!mainDB)
       return;
     var transaction = mainDB.transaction([this.objStore]);
-    var request = transaction.objectStore(this.objStore).get(aKey);
-    request.onsuccess = function(event) {
-      aCallback(request.result, event);
-    };
-    request.onerror = function(event) {
-      // Errors can be handled here.
-      aCallback(undefined, event);
-    };
+    var objStore = transaction.objectStore(this.objStore);
+    if (objStore.getAll) { // currently Mozilla-specific
+      objStore.getAll().onsuccess = function(event) {
+        gSyncPrefs.shadow = event.target.result;
+        aCallback();
+      };
+    }
+    else { // Use cursor (standard method).
+      objStore.openCursor().onsuccess = function(event) {
+        var cursor = event.target.result;
+        if (cursor) {
+          gSyncPrefs.shadow[cursor.key] = cursor.value;
+          cursor.continue();
+        }
+        else {
+          aCallback();
+        }
+      };
+    }
   },
 
-  set: function(aKey, aValue, aCallback) {
+  get: function(aKey) {
+    // Only use the shadow.
+    return this.shadow[aKey];
+  },
+
+  set: function(aKey, aValue) {
+    // First update the shadow.
+    this.shadow[aKey] = aValue;
+    // Now sync the DB with this.
     if (!mainDB)
       return;
     var success = false;
@@ -694,17 +804,17 @@ var gPrefs = {
     var request = objStore.put(aValue, aKey);
     request.onsuccess = function(event) {
       success = true;
-      if (aCallback)
-        aCallback(success, event);
+      // Nothing else to be done!
     };
     request.onerror = function(event) {
-      // Errors can be handled here.
-      if (aCallback)
-        aCallback(success, event);
+      // Errors could be handled here (but are ignored).
     };
   },
 
-  unset: function(aKey, aCallback) {
+  unset: function(aKey) {
+    // First update the shadow.
+    delete this.shadow[aKey];
+    // Now sync the DB with this.
     if (!mainDB)
       return;
     var success = false;
@@ -712,13 +822,10 @@ var gPrefs = {
     var request = transaction.objectStore(this.objStore).delete(aKey);
     request.onsuccess = function(event) {
       success = true;
-      if (aCallback)
-        aCallback(success, event);
+      // Nothing else to be done!
     };
     request.onerror = function(event) {
-      // Errors can be handled here.
-      if (aCallback)
-        aCallback(success, event);
+      // Errors could be handled here (but are ignored).
     }
   }
 };
